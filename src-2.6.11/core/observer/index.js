@@ -149,6 +149,7 @@ export function defineReactive (
   // cater for pre-defined getter/setters
   const getter = property && property.get
   const setter = property && property.set
+  // 0es: ?
   if ((!getter || setter) && arguments.length === 2) {
     val = obj[key]
   }
@@ -160,7 +161,13 @@ export function defineReactive (
     get: function reactiveGetter () {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 这是值真正的依赖位置
         dep.depend()
+        // Array or Object
+        // 这里是在对象或数组set&del时更新的依赖位置
+        // 对应全局方法Vue.set和Vue.delete？
+        // 文档注： 目标对象不能是一个 Vue 实例或 Vue 实例的根数据对象。
+        // 因为根数据对象的依赖没有被depend
         if (childOb) {
           childOb.dep.depend()
           if (Array.isArray(value)) {
@@ -173,6 +180,7 @@ export function defineReactive (
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
+      // 0es: exclude NaN
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }
@@ -181,6 +189,9 @@ export function defineReactive (
         customSetter()
       }
       // #7981: for accessor properties without setter
+      // In summary, when the value of the Object.getOwnPropertyDescriptor method is undefined
+      // both the getter and the setter are undefined
+      // so (getter && !setter) will always be false and will not affect the execution of the customSetter
       if (getter && !setter) return
       if (setter) {
         setter.call(obj, newVal)
