@@ -37,6 +37,7 @@ methodsToPatch.forEach(function (method) {
         inserted = args.slice(2)
         break
     }
+    // 这里会将变化的非基本类型数据变为Observer对象
     if (inserted) ob.observeArray(inserted)
     // notify change
     ob.dep.notify()

@@ -70,6 +70,7 @@ export class Observer {
 
   /**
    * Observe a list of Array items.
+   * 这里只会转化值为Object && Array类型的数据
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {
@@ -154,6 +155,7 @@ export function defineReactive (
     val = obj[key]
   }
 
+  // 这里是Object && Array类型的子值的递归
   let childOb = !shallow && observe(val)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -162,9 +164,10 @@ export function defineReactive (
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
         // 这是值真正的依赖位置
+        // 比如字符串等被set时会触发此dep的notify
         dep.depend()
         // Array or Object
-        // 这里是在对象或数组set&del时更新的依赖位置
+        // 这里是在对象或数组在被get时创建的依赖位置，对象被set&del时会触发对应的notify（数组操作在array.js）
         // 对应全局方法Vue.set和Vue.delete？
         // 文档注： 目标对象不能是一个 Vue 实例或 Vue 实例的根数据对象。
         // 因为根数据对象的依赖没有被depend
